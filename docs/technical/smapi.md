@@ -71,10 +71,10 @@ Rebuilding the solution in debug mode will copy the SMAPI files into your game f
 the `SMAPI` project with debugging from Visual Studio or Rider should launch SMAPI with the
 debugger attached, so you can intercept errors and step through the code being executed.
 
-### Custom Harmony build
-SMAPI uses [a custom build of Harmony](https://github.com/Pathoschild/Harmony#readme), which is
-included in the `build` folder. To use a different build, just replace `0Harmony.dll` in that
-folder before compiling.
+### Custom dependencies
+SMAPI uses a [custom version of Harmony](https://github.com/Pathoschild/Harmony#readme) and a
+[custom version of TMXTile](https://github.com/Pathoschild/TMXTile#readme), stored in the `build`
+folder. To use a different build, just replace their files in that folder before compiling.
 
 ## Prepare a release
 ### On any platform

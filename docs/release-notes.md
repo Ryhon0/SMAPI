@@ -3,6 +3,7 @@
 # Release notes
 ## Upcoming release
 * For players:
+  * Updated for Stardew Valley 1.6.
   * Improved translations. Thanks to ChulkyBow (updated Ukrainian)!
   * Fixed `player_add` console command's handling of Journal Scraps and Secret Notes.
   * Removed `player_setimmunity` console command (broke in 1.6 and rarely used).
