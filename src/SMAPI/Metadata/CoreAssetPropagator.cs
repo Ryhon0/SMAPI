@@ -501,8 +501,7 @@ namespace StardewModdingAPI.Metadata
                     return true;
 
                 case "tilesheets/fruittrees": // FruitTree
-                    FruitTree.texture = content.Load<Texture2D>(key);
-                    return true;
+                    return this.ReloadDefaultFruitTreeTexture(content, assetName);
 
                 case "tilesheets/furniture": // Game1.LoadContent
                     Furniture.furnitureTexture = content.Load<Texture2D>(key);
@@ -555,27 +554,27 @@ namespace StardewModdingAPI.Metadata
                     return true;
 
                 case "terrainfeatures/mushroom_tree": // from Tree
-                    return !ignoreWorld && this.ReloadTreeTextures(content, assetName, Tree.mushroomTree);
+                    return !ignoreWorld && this.ReloadTreeTextures(content, assetName, Tree.mushroomTree.ToString());
 
                 case "terrainfeatures/tree_palm": // from Tree
-                    return !ignoreWorld && this.ReloadTreeTextures(content, assetName, Tree.palmTree);
+                    return !ignoreWorld && this.ReloadTreeTextures(content, assetName, Tree.palmTree.ToString());
 
                 case "terrainfeatures/tree1_fall": // from Tree
                 case "terrainfeatures/tree1_spring": // from Tree
                 case "terrainfeatures/tree1_summer": // from Tree
                 case "terrainfeatures/tree1_winter": // from Tree
-                    return !ignoreWorld && this.ReloadTreeTextures(content, assetName, Tree.bushyTree);
+                    return !ignoreWorld && this.ReloadTreeTextures(content, assetName, Tree.bushyTree.ToString());
 
                 case "terrainfeatures/tree2_fall": // from Tree
                 case "terrainfeatures/tree2_spring": // from Tree
                 case "terrainfeatures/tree2_summer": // from Tree
                 case "terrainfeatures/tree2_winter": // from Tree
-                    return !ignoreWorld && this.ReloadTreeTextures(content, assetName, Tree.leafyTree);
+                    return !ignoreWorld && this.ReloadTreeTextures(content, assetName, Tree.leafyTree.ToString());
 
                 case "terrainfeatures/tree3_fall": // from Tree
                 case "terrainfeatures/tree3_spring": // from Tree
                 case "terrainfeatures/tree3_winter": // from Tree
-                    return !ignoreWorld && this.ReloadTreeTextures(content, assetName, Tree.pineTree);
+                    return !ignoreWorld && this.ReloadTreeTextures(content, assetName, Tree.pineTree.ToString());
             }
 
             /****
@@ -1056,12 +1055,34 @@ namespace StardewModdingAPI.Metadata
             return texture.IsValueCreated;
         }
 
+        /// <summary>Reload fruit trees which use the default texture.</summary>
+        /// <param name="content">The content manager through which to reload the asset.</param>
+        /// <param name="assetName">The asset name to reload.</param>
+        /// <returns>Returns whether any textures were reloaded.</returns>
+        private bool ReloadDefaultFruitTreeTexture(LocalizedContentManager content, IAssetName assetName)
+        {
+            FruitTree[] trees = this.GetLocations()
+                .SelectMany(p => p.terrainFeatures.Values.OfType<FruitTree>())
+                .Where(p => assetName.IsEquivalentTo(p.textureOverride.Value))
+                .ToArray();
+
+            if (trees.Any())
+            {
+                Texture2D texture = content.Load<Texture2D>(assetName.Name);
+                foreach (FruitTree tree in trees)
+                    tree.texture = texture;
+                return true;
+            }
+
+            return false;
+        }
+
         /// <summary>Reload tree textures.</summary>
         /// <param name="content">The content manager through which to reload the asset.</param>
         /// <param name="assetName">The asset name to reload.</param>
         /// <param name="type">The type to reload.</param>
         /// <returns>Returns whether any textures were reloaded.</returns>
-        private bool ReloadTreeTextures(LocalizedContentManager content, IAssetName assetName, int type)
+        private bool ReloadTreeTextures(LocalizedContentManager content, IAssetName assetName, string type)
         {
             Tree[] trees = this.GetLocations()
                 .SelectMany(p => p.terrainFeatures.Values.OfType<Tree>())
