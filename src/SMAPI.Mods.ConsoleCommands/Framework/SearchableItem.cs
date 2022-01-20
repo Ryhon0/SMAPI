@@ -1,7 +1,7 @@
 using System;
 using StardewValley;
 
-namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.ItemData
+namespace StardewModdingAPI.Mods.ConsoleCommands.Framework
 {
     /// <summary>A game item with metadata.</summary>
     internal class SearchableItem
@@ -9,8 +9,8 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.ItemData
         /*********
         ** Accessors
         *********/
-        /// <summary>The item type.</summary>
-        public ItemType Type { get; }
+        /// <summary>The <see cref="ItemDataDefinition.Identifier"/> value for the item type.</summary>
+        public string Type { get; }
 
         /// <summary>A sample item instance.</summary>
         public Item Item { get; }
@@ -18,8 +18,11 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.ItemData
         /// <summary>Create an item instance.</summary>
         public Func<Item> CreateItem { get; }
 
-        /// <summary>The item's unique ID for its type.</summary>
-        public int ID { get; }
+        /// <summary>The unqualified item ID.</summary>
+        public string ID { get; }
+
+        /// <summary>The qualified item ID.</summary>
+        public string QualifiedItemID { get; }
 
         /// <summary>The item's default name.</summary>
         public string Name => this.Item.Name;
@@ -33,12 +36,13 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.ItemData
         *********/
         /// <summary>Construct an instance.</summary>
         /// <param name="type">The item type.</param>
-        /// <param name="id">The unique ID (if different from the item's parent sheet index).</param>
+        /// <param name="id">The unqualified item ID.</param>
         /// <param name="createItem">Create an item instance.</param>
-        public SearchableItem(ItemType type, int id, Func<SearchableItem, Item> createItem)
+        public SearchableItem(string type, string id, Func<SearchableItem, Item> createItem)
         {
             this.Type = type;
             this.ID = id;
+            this.QualifiedItemID = this.Type + this.ID;
             this.CreateItem = () => createItem(this);
             this.Item = createItem(this);
         }

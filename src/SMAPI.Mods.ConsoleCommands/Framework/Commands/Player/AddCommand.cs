@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using StardewModdingAPI.Mods.ConsoleCommands.Framework.ItemData;
 using StardewValley;
 using Object = StardewValley.Object;
 
@@ -13,10 +12,7 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Player
         ** Fields
         *********/
         /// <summary>Provides methods for searching and constructing items.</summary>
-        private readonly ItemRepository Items = new ItemRepository();
-
-        /// <summary>The type names recognized by this command.</summary>
-        private readonly string[] ValidTypes = Enum.GetNames(typeof(ItemType)).Concat(new[] { "Name" }).ToArray();
+        private readonly ItemRepository Items = new();
 
 
         /*********
@@ -40,65 +36,101 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Player
             }
 
             // read arguments
-            if (!args.TryGet(0, "item type", out string type, oneOf: this.ValidTypes))
+            if (!this.TryReadArguments(args, out string id, out string name, out int? count, out int? quality))
                 return;
-            if (!args.TryGetInt(2, "count", out int count, min: 1, required: false))
-                count = 1;
-            if (!args.TryGetInt(3, "quality", out int quality, min: Object.lowQuality, max: Object.bestQuality, required: false))
-                quality = Object.lowQuality;
 
             // find matching item
-            SearchableItem match = Enum.TryParse(type, true, out ItemType itemType)
-                ? this.FindItemByID(monitor, args, itemType)
-                : this.FindItemByName(monitor, args);
+            SearchableItem match = id != null
+                ? this.FindItemByID(monitor, id)
+                : this.FindItemByName(monitor, name);
             if (match == null)
                 return;
 
             // apply count
-            match.Item.Stack = count;
+            match.Item.Stack = count ?? 1;
 
             // apply quality
-            if (match.Item is Object obj)
-                obj.Quality = quality;
-            else if (match.Item is Tool tool)
-                tool.UpgradeLevel = quality;
+            if (quality != null)
+            {
+                if (match.Item is Object obj)
+                    obj.Quality = quality.Value;
+                else if (match.Item is Tool tool && args.Count >= 3)
+                    tool.UpgradeLevel = quality.Value;
+            }
 
             // add to inventory
             Game1.player.addItemByMenuIfNecessary(match.Item);
-            monitor.Log($"OK, added {match.Name} ({match.Type} #{match.ID}) to your inventory.", LogLevel.Info);
+            monitor.Log($"OK, added {match.Name} (ID: {match.QualifiedItemID}) to your inventory.", LogLevel.Info);
         }
 
 
         /*********
         ** Private methods
         *********/
+        private bool TryReadArguments(ArgumentParser args, out string id, out string name, out int? count, out int? quality)
+        {
+            // get id or 'name' flag
+            if (!args.TryGet(0, "id or 'name'", out id, required: true))
+            {
+                name = null;
+                count = null;
+                quality = null;
+                return false;
+            }
+
+            // get name
+            int argOffset = 0;
+            if (string.Equals(id, "name", StringComparison.OrdinalIgnoreCase))
+            {
+                id = null;
+                if (!args.TryGet(1, "item name", out name))
+                {
+                    count = null;
+                    quality = null;
+                    return false;
+                }
+
+                argOffset = 1;
+            }
+            else
+                name = null;
+
+            // get count
+            count = null;
+            if (args.TryGetInt(1 + argOffset, "count", out int rawCount, min: 1, required: false))
+                count = rawCount;
+
+            // get quality
+            quality = null;
+            if (args.TryGetInt(2 + argOffset, "quality", out int rawQuality, min: Object.lowQuality, max: Object.bestQuality, required: false))
+                quality = rawQuality;
+
+            return true;
+        }
+
+
         /// <summary>Get a matching item by its ID.</summary>
         /// <param name="monitor">Writes messages to the console and log file.</param>
-        /// <param name="args">The command arguments.</param>
-        /// <param name="type">The item type.</param>
-        private SearchableItem FindItemByID(IMonitor monitor, ArgumentParser args, ItemType type)
+        /// <param name="id">The qualified item ID.</param>
+        private SearchableItem FindItemByID(IMonitor monitor, string id)
         {
-            // read arguments
-            if (!args.TryGetInt(1, "item ID", out int id, min: 0))
-                return null;
+            var item = this.Items
+                .GetAll()
+                .Where(p => string.Equals(p.QualifiedItemID, id, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(p => p.QualifiedItemID == id) // prefer case-sensitive match
+                .FirstOrDefault();
 
-            // find matching item
-            SearchableItem item = this.Items.GetAll().FirstOrDefault(p => p.Type == type && p.ID == id);
             if (item == null)
-                monitor.Log($"There's no {type} item with ID {id}.", LogLevel.Error);
+                monitor.Log($"There's no item with the qualified ID {id}.", LogLevel.Error);
+
             return item;
         }
 
         /// <summary>Get a matching item by its name.</summary>
         /// <param name="monitor">Writes messages to the console and log file.</param>
-        /// <param name="args">The command arguments.</param>
-        private SearchableItem FindItemByName(IMonitor monitor, ArgumentParser args)
+        /// <param name="name">The partial item name to match.</param>
+        private SearchableItem FindItemByName(IMonitor monitor, string name)
         {
-            // read arguments
-            if (!args.TryGet(1, "item name", out string name))
-                return null;
-
-            // find matching items
             SearchableItem[] matches = this.Items.GetAll().Where(p => p.NameContains(name)).ToArray();
             if (!matches.Any())
             {
@@ -115,7 +147,7 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Player
             string options = this.GetTableString(
                 data: matches,
                 header: new[] { "type", "name", "command" },
-                getRow: item => new[] { item.Type.ToString(), item.DisplayName, $"player_add {item.Type} {item.ID}" }
+                getRow: item => new[] { item.Type.ToString(), item.DisplayName, $"player_add {item.QualifiedItemID}" }
             );
             monitor.Log($"There's no item with name '{name}'. Do you mean one of these?\n\n{options}", LogLevel.Info);
             return null;
@@ -124,17 +156,15 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Player
         /// <summary>Get the command description.</summary>
         private static string GetDescription()
         {
-            string[] typeValues = Enum.GetNames(typeof(ItemType));
             return "Gives the player an item.\n"
                 + "\n"
-                + "Usage: player_add <type> <item> [count] [quality]\n"
-                + $"- type: the item type (one of {string.Join(", ", typeValues)}).\n"
-                + "- item: the item ID (use the 'list_items' command to see a list).\n"
+                + "Usage: player_add <item id> [count] [quality]\n"
+                + "- item id: the item ID (use the 'list_items' command to see a list).\n"
                 + "- count (optional): how many of the item to give.\n"
                 + $"- quality (optional): one of {Object.lowQuality} (normal), {Object.medQuality} (silver), {Object.highQuality} (gold), or {Object.bestQuality} (iridium).\n"
                 + "\n"
-                + "Usage: player_add name \"<name>\" [count] [quality]\n"
-                + "- name: the item name to search (use the 'list_items' command to see a list). This will add the item immediately if it's an exact match, else show a table of matching items.\n"
+                + "Usage: player_add name \"<item name>\" [count] [quality]\n"
+                + "- item name: the item name to search (use the 'list_items' command to see a list). This will add the item immediately if it's an exact match, else show a table of matching items.\n"
                 + "- count (optional): how many of the item to give.\n"
                 + $"- quality (optional): one of {Object.lowQuality} (normal), {Object.medQuality} (silver), {Object.highQuality} (gold), or {Object.bestQuality} (iridium).\n"
                 + "\n"

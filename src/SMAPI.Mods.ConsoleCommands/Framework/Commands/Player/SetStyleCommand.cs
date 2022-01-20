@@ -10,7 +10,7 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Player
         *********/
         /// <summary>Construct an instance.</summary>
         public SetStyleCommand()
-            : base("player_changestyle", "Sets the style of a player feature.\n\nUsage: player_changestyle <target> <value>.\n- target: what to change (one of 'hair', 'shirt', 'skin', 'acc', 'shoe', 'swim', or 'gender').\n- value: the integer style ID.") { }
+            : base("player_changestyle", "Sets the style of a player feature.\n\nUsage: player_changestyle <target> <value>.\n- target: what to change (one of 'hair', 'shirt', 'skin', 'acc', 'shoe', 'swim', or 'gender').\n- value: the style ID.") { }
 
         /// <summary>Handle the command.</summary>
         /// <param name="monitor">Writes messages to the console and log file.</param>
@@ -21,15 +21,27 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Player
             // parse arguments
             if (!args.TryGet(0, "target", out string target, oneOf: new[] { "hair", "shirt", "acc", "skin", "shoe", "swim", "gender" }))
                 return;
-            if (!args.TryGetInt(1, "style ID", out int styleID))
+            if (!args.TryGet(1, "style ID", out string styleID))
                 return;
+
+            bool AssertIntStyle(out int id)
+            {
+                if (int.TryParse(styleID, out id))
+                    return true;
+
+                monitor.Log($"The style ID must be a numeric integer for the '{target}' target.", LogLevel.Error);
+                return false;
+            }
 
             // handle
             switch (target)
             {
                 case "hair":
-                    Game1.player.changeHairStyle(styleID);
-                    monitor.Log("OK, your hair style is updated.", LogLevel.Info);
+                    if (AssertIntStyle(out int hairId))
+                    {
+                        Game1.player.changeHairStyle(hairId);
+                        monitor.Log("OK, your hair style is updated.", LogLevel.Info);
+                    }
                     break;
 
                 case "shirt":
@@ -38,13 +50,19 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Player
                     break;
 
                 case "acc":
-                    Game1.player.changeAccessory(styleID);
-                    monitor.Log("OK, your accessory style is updated.", LogLevel.Info);
+                    if (AssertIntStyle(out int accId))
+                    {
+                        Game1.player.changeAccessory(accId);
+                        monitor.Log("OK, your accessory style is updated.", LogLevel.Info);
+                    }
                     break;
 
                 case "skin":
-                    Game1.player.changeSkinColor(styleID);
-                    monitor.Log("OK, your skin color is updated.", LogLevel.Info);
+                    if (AssertIntStyle(out int skinId))
+                    {
+                        Game1.player.changeSkinColor(skinId);
+                        monitor.Log("OK, your skin color is updated.", LogLevel.Info);
+                    }
                     break;
 
                 case "shoe":
@@ -53,36 +71,46 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Player
                     break;
 
                 case "swim":
-                    switch (styleID)
+                    if (AssertIntStyle(out int swimId))
                     {
-                        case 0:
-                            Game1.player.changeOutOfSwimSuit();
-                            monitor.Log("OK, you're no longer in your swimming suit.", LogLevel.Info);
-                            break;
-                        case 1:
-                            Game1.player.changeIntoSwimsuit();
-                            monitor.Log("OK, you're now in your swimming suit.", LogLevel.Info);
-                            break;
-                        default:
-                            this.LogUsageError(monitor, "The swim value should be 0 (no swimming suit) or 1 (swimming suit).");
-                            break;
+                        switch (swimId)
+                        {
+                            case 0:
+                                Game1.player.changeOutOfSwimSuit();
+                                monitor.Log("OK, you're no longer in your swimming suit.", LogLevel.Info);
+                                break;
+
+                            case 1:
+                                Game1.player.changeIntoSwimsuit();
+                                monitor.Log("OK, you're now in your swimming suit.", LogLevel.Info);
+                                break;
+
+                            default:
+                                this.LogUsageError(monitor, "The swim value should be 0 (no swimming suit) or 1 (swimming suit).");
+                                break;
+                        }
                     }
                     break;
 
                 case "gender":
-                    switch (styleID)
+                    if (AssertIntStyle(out int genderId))
                     {
-                        case 0:
-                            Game1.player.changeGender(true);
-                            monitor.Log("OK, you're now male.", LogLevel.Info);
-                            break;
-                        case 1:
-                            Game1.player.changeGender(false);
-                            monitor.Log("OK, you're now female.", LogLevel.Info);
-                            break;
-                        default:
-                            this.LogUsageError(monitor, "The gender value should be 0 (male) or 1 (female).");
-                            break;
+                        switch (genderId)
+                        {
+                            case 0:
+                                Game1.player.changeGender(true);
+                                monitor.Log("OK, you're now male.", LogLevel.Info);
+                                break;
+
+                            case 1:
+                                Game1.player.changeGender(false);
+                                monitor.Log("OK, you're now female.", LogLevel.Info);
+                                break;
+
+                            default:
+                                this.LogUsageError(monitor, "The gender value should be 0 (male) or 1 (female).");
+                                break;
+                        }
                     }
                     break;
             }

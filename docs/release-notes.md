@@ -5,8 +5,11 @@
 * For players:
   * Updated for Stardew Valley 1.6.
   * Improved translations. Thanks to ChulkyBow (updated Ukrainian)!
+
+* For the Console Commands mod:
+  * Rewrote `player_add` to support the game's new custom items system.
+  * Removed `list_item_types` (no longer needed) and `player_setimmunity` (broke in 1.6 and rarely used).
   * Fixed `player_add` console command's handling of Journal Scraps and Secret Notes.
-  * Removed `player_setimmunity` console command (broke in 1.6 and rarely used).
 
 * For mod authors:
   * Overhauled [mod-provided APIs](https://stardewvalleywiki.com/Modding:Modder_Guide/APIs/Integrations#Mod-provided_APIs) (thanks to Shockah!).  

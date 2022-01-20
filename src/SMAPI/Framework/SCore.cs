@@ -1179,8 +1179,8 @@ namespace StardewModdingAPI.Framework
             {
                 // detect issues
                 bool hasObjectIssues = false;
-                void LogIssue(int id, string issue) => this.Monitor.Log($@"Detected issue: item #{id} in Content\Data\ObjectInformation.xnb is invalid ({issue}).");
-                foreach (KeyValuePair<int, string> entry in Game1.objectInformation)
+                void LogIssue(string id, string issue) => this.Monitor.Log($@"Detected issue: item #{id} in Content\Data\ObjectInformation.xnb is invalid ({issue}).");
+                foreach (KeyValuePair<string, string> entry in Game1.objectInformation)
                 {
                     // must not be empty
                     if (string.IsNullOrWhiteSpace(entry.Value))

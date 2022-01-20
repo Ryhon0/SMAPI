@@ -52,11 +52,11 @@ namespace StardewModdingAPI.Mods.ErrorHandler.Patches
         /// <param name="precondition">The precondition to be parsed.</param>
         /// <param name="__exception">The exception thrown by the wrapped method, if any.</param>
         /// <returns>Returns the exception to throw, if any.</returns>
-        private static Exception Finalize_CheckEventPrecondition(ref int __result, string precondition, Exception __exception)
+        private static Exception Finalize_CheckEventPrecondition(ref string __result, string precondition, Exception __exception)
         {
             if (__exception != null)
             {
-                __result = -1;
+                __result = "-1";
                 GameLocationPatcher.MonitorForGame.Log($"Failed parsing event precondition ({precondition}):\n{__exception.InnerException}", LogLevel.Error);
             }
 

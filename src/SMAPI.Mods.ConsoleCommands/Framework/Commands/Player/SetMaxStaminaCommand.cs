@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using StardewValley;
 
 namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Player
@@ -22,15 +22,15 @@ namespace StardewModdingAPI.Mods.ConsoleCommands.Framework.Commands.Player
             // validate
             if (!args.Any())
             {
-                monitor.Log($"You currently have {Game1.player.MaxStamina} max stamina. Specify a value to change it.", LogLevel.Info);
+                monitor.Log($"You currently have {Game1.player.maxStamina} base max stamina. Specify a value to change it.", LogLevel.Info);
                 return;
             }
 
             // handle
             if (args.TryGetInt(0, "amount", out int amount, min: 1))
             {
-                Game1.player.MaxStamina = amount;
-                monitor.Log($"OK, you now have {Game1.player.MaxStamina} max stamina.", LogLevel.Info);
+                Game1.player.maxStamina.Value = amount;
+                monitor.Log($"OK, you now have {Game1.player.maxStamina.Value} base max stamina.", LogLevel.Info);
             }
         }
     }

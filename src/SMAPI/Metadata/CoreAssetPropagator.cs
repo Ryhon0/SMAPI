@@ -275,11 +275,11 @@ namespace StardewModdingAPI.Metadata
                     return true;
 
                 case "data/bigcraftablesinformation": // Game1.LoadContent
-                    Game1.bigCraftablesInformation = content.Load<Dictionary<int, string>>(key);
+                    Game1.bigCraftablesInformation = content.Load<Dictionary<string, string>>(key);
                     return true;
 
                 case "data/clothinginformation": // Game1.LoadContent
-                    Game1.clothingInformation = content.Load<Dictionary<int, string>>(key);
+                    Game1.clothingInformation = content.Load<Dictionary<string, string>>(key);
                     return true;
 
                 case "data/concessions": // MovieTheater.GetConcessions
@@ -323,7 +323,7 @@ namespace StardewModdingAPI.Metadata
                     return true;
 
                 case "data/objectinformation": // Game1.LoadContent
-                    Game1.objectInformation = content.Load<Dictionary<int, string>>(key);
+                    Game1.objectInformation = content.Load<Dictionary<string, string>>(key);
                     return true;
 
                 /****
@@ -684,7 +684,7 @@ namespace StardewModdingAPI.Metadata
                 string expectedKey = animal.age.Value < animal.ageWhenMature.Value
                     ? $"Baby{(animal.type.Value == "Duck" ? "White Chicken" : animal.type.Value)}"
                     : animal.type.Value;
-                if (animal.showDifferentTextureWhenReadyForHarvest.Value && animal.currentProduce.Value <= 0)
+                if (animal.showDifferentTextureWhenReadyForHarvest.Value && animal.currentProduce.Value == null)
                     expectedKey = $"Sheared{expectedKey}";
                 expectedKey = $"Animals/{expectedKey}";
 
