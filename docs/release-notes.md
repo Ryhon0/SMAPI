@@ -5,6 +5,7 @@
 * For players:
   * Improved translations. Thanks to ChulkyBow (updated Ukrainian)!
   * Fixed `player_add` console command's handling of Journal Scraps and Secret Notes.
+  * Removed `player_setimmunity` console command (broke in 1.6 and rarely used).
 
 * For mod authors:
   * Overhauled [mod-provided APIs](https://stardewvalleywiki.com/Modding:Modder_Guide/APIs/Integrations#Mod-provided_APIs) (thanks to Shockah!).  
