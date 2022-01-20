@@ -32,9 +32,7 @@ namespace StardewModdingAPI.Mods.ErrorHandler
                 new DialoguePatcher(monitorForGame, this.Helper.Reflection),
                 new EventPatcher(monitorForGame),
                 new GameLocationPatcher(monitorForGame),
-                new IClickableMenuPatcher(),
                 new NpcPatcher(monitorForGame),
-                new ObjectPatcher(),
                 new SaveGamePatcher(this.Monitor, this.OnSaveContentRemoved),
                 new SpriteBatchPatcher(),
                 new UtilityPatcher()
