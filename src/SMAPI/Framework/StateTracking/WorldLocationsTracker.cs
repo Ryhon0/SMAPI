@@ -212,8 +212,7 @@ namespace StardewModdingAPI.Framework.StateTracking
             this.LocationDict[location] = new LocationTracker(location);
 
             // add buildings
-            if (location is BuildableGameLocation buildableLocation)
-                this.Add(buildableLocation.buildings);
+            this.Add(location.buildings);
         }
 
         /// <summary>Remove the given building.</summary>
@@ -242,8 +241,7 @@ namespace StardewModdingAPI.Framework.StateTracking
                 // remove
                 this.LocationDict.Remove(location);
                 watcher.Dispose();
-                if (location is BuildableGameLocation buildableLocation)
-                    this.Remove(buildableLocation.buildings);
+                this.Remove(location.buildings);
             }
         }
 

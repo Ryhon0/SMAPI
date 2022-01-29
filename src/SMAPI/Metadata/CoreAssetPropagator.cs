@@ -710,7 +710,6 @@ namespace StardewModdingAPI.Metadata
 
             // get buildings
             Building[] buildings = this.GetLocations(buildingInteriors: false)
-                .OfType<BuildableGameLocation>()
                 .SelectMany(p => p.buildings)
                 .Where(p => p.buildingType.Value == type)
                 .ToArray();
@@ -1241,9 +1240,9 @@ namespace StardewModdingAPI.Metadata
             {
                 yield return new LocationInfo(location, null);
 
-                if (buildingInteriors && location is BuildableGameLocation buildableLocation)
+                if (buildingInteriors)
                 {
-                    foreach (Building building in buildableLocation.buildings)
+                    foreach (Building building in location.buildings)
                     {
                         GameLocation indoors = building.indoors.Value;
                         if (indoors != null)

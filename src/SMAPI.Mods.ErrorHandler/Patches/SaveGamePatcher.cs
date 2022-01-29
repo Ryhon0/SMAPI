@@ -8,7 +8,6 @@ using StardewModdingAPI.Internal;
 using StardewModdingAPI.Internal.Patching;
 using StardewValley;
 using StardewValley.Buildings;
-using StardewValley.Locations;
 
 namespace StardewModdingAPI.Mods.ErrorHandler.Patches
 {
@@ -115,24 +114,21 @@ namespace StardewModdingAPI.Mods.ErrorHandler.Patches
                 return false;
 
             // check buildings
-            if (location is BuildableGameLocation buildableLocation)
+            foreach (Building building in location.buildings.ToArray())
             {
-                foreach (Building building in buildableLocation.buildings.ToArray())
+                try
                 {
-                    try
-                    {
-                        BluePrint _ = new BluePrint(building.buildingType.Value);
-                    }
-                    catch (ContentLoadException)
-                    {
-                        SaveGamePatcher.Monitor.Log($"Removed invalid building type '{building.buildingType.Value}' in {location.Name} ({building.tileX}, {building.tileY}) to avoid a crash when loading save '{Constants.SaveFolderName}'. (Did you remove a custom building mod?)", LogLevel.Warn);
-                        buildableLocation.buildings.Remove(building);
-                        removedAny = true;
-                        continue;
-                    }
-
-                    SaveGamePatcher.RemoveBrokenContent(building.indoors.Value, npcs);
+                    BluePrint _ = new(building.buildingType.Value);
                 }
+                catch (ContentLoadException)
+                {
+                    SaveGamePatcher.Monitor.Log($"Removed invalid building type '{building.buildingType.Value}' in {location.Name} ({building.tileX}, {building.tileY}) to avoid a crash when loading save '{Constants.SaveFolderName}'. (Did you remove a custom building mod?)", LogLevel.Warn);
+                    location.buildings.Remove(building);
+                    removedAny = true;
+                    continue;
+                }
+
+                SaveGamePatcher.RemoveBrokenContent(building.indoors.Value, npcs);
             }
 
             // check NPCs
