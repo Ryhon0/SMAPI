@@ -164,32 +164,32 @@ namespace StardewModdingAPI.Framework.ContentManagers
         ** Cache invalidation
         ****/
         /// <inheritdoc />
-        public IDictionary<string, object> InvalidateCache(Func<string, Type, bool> predicate, bool dispose = false)
+        public IEnumerable<KeyValuePair<string, object>> GetCachedAssets()
         {
-            IDictionary<string, object> removeAssets = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            this.Cache.Remove((key, asset) =>
+            foreach (string key in this.Cache.Keys)
+                yield return new(key, this.Cache[key]);
+        }
+
+        /// <summary>Remove an asset from the cache.</summary>
+        /// <param name="assetName">The asset name to remove.</param>
+        /// <param name="dispose">Whether to dispose invalidated assets. This should only be <c>true</c> when they're being invalidated as part of a dispose, to avoid crashing the game.</param>
+        /// <returns>Returns whether the asset was in the cache.</returns>
+        public bool InvalidateCache(IAssetName assetName, bool dispose = false)
+        {
+            if (!this.Cache.ContainsKey(assetName.Name))
+                return false;
+
+            // dispose tilesheets
+            if (this.AggressiveMemoryOptimizations)
             {
-                string baseAssetName = this.Coordinator.ParseAssetName(key).BaseName;
+                if (this.Cache[assetName.Name] is Map map)
+                    map.DisposeTileSheets(Game1.mapDisplayDevice);
+            }
 
-                // check if asset should be removed
-                bool remove = removeAssets.ContainsKey(baseAssetName);
-                if (!remove && predicate(baseAssetName, asset.GetType()))
-                {
-                    removeAssets[baseAssetName] = asset;
-                    remove = true;
-                }
+            // remove from cache
+            this.Cache.Remove(assetName.Name, dispose);
 
-                // dispose if safe
-                if (remove && this.AggressiveMemoryOptimizations)
-                {
-                    if (asset is Map map)
-                        map.DisposeTileSheets(Game1.mapDisplayDevice);
-                }
-
-                return remove;
-            }, dispose);
-
-            return removeAssets;
+            return true;
         }
 
         /// <inheritdoc />

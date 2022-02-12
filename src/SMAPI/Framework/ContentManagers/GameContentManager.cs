@@ -130,16 +130,20 @@ namespace StardewModdingAPI.Framework.ContentManagers
             }
 
             // invalidate translatable assets
-            string[] invalidated = this
-                .InvalidateCache((key, type) =>
-                    removeAssetNames.Contains(key)
-                    || removeAssetNames.Contains(this.Coordinator.ParseAssetName(key).BaseName)
-                )
-                .Select(p => p.Key)
-                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+            List<IAssetName> invalidated = new();
+            foreach ((string key, _) in this.GetCachedAssets().ToArray())
+            {
+                IAssetName assetName = this.Coordinator.ParseAssetName(key);
+                if (removeAssetNames.Contains(assetName.Name) || removeAssetNames.Contains(assetName.BaseName))
+                {
+                    invalidated.Add(assetName);
+                    this.Cache.Remove(key, dispose: false);
+
+                    this.InvalidateCache(assetName);
+                }
+            }
             if (invalidated.Any())
-                this.Monitor.Log($"Invalidated {invalidated.Length} asset names: {string.Join(", ", invalidated)} for locale change.");
+                this.Monitor.Log($"Invalidated {invalidated.Count} asset names: {string.Join(", ", invalidated.OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase))} for locale change.");
         }
 
         /// <inheritdoc />

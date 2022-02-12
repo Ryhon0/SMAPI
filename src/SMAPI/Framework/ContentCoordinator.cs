@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Framework.Content;
 using StardewModdingAPI.Framework.ContentManagers;
 using StardewModdingAPI.Framework.Reflection;
@@ -334,17 +335,26 @@ namespace StardewModdingAPI.Framework
         public IEnumerable<IAssetName> InvalidateCache(Func<IContentManager, string, Type, bool> predicate, bool dispose = false)
         {
             // invalidate cache & track removed assets
-            IDictionary<IAssetName, Type> removedAssets = new Dictionary<IAssetName, Type>();
+            IDictionary<IAssetName, Type> invalidatedAssets = new Dictionary<IAssetName, Type>();
             this.ContentManagerLock.InReadLock(() =>
             {
                 // cached assets
                 foreach (IContentManager contentManager in this.ContentManagers)
                 {
-                    foreach (var entry in contentManager.InvalidateCache((key, type) => predicate(contentManager, key, type), dispose))
+                    foreach ((string key, object asset) in contentManager.GetCachedAssets())
                     {
-                        AssetName assetName = this.ParseAssetName(entry.Key);
-                        if (!removedAssets.ContainsKey(assetName))
-                            removedAssets[assetName] = entry.Value.GetType();
+                        Type assetType = asset.GetType();
+
+                        if (!predicate(contentManager, key, assetType))
+                            continue;
+
+                        AssetName assetName = this.ParseAssetName(key);
+
+                        if (asset is not Texture2D) // will edit in place
+                            contentManager.InvalidateCache(assetName, dispose);
+
+                        if (!invalidatedAssets.ContainsKey(assetName))
+                            invalidatedAssets[assetName] = asset.GetType();
                     }
                 }
 
@@ -359,18 +369,19 @@ namespace StardewModdingAPI.Framework
 
                         // get map path
                         AssetName mapPath = this.ParseAssetName(this.MainContentManager.AssertAndNormalizeAssetName(location.mapPath.Value));
-                        if (!removedAssets.ContainsKey(mapPath) && predicate(this.MainContentManager, mapPath.Name, typeof(Map)))
-                            removedAssets[mapPath] = typeof(Map);
+                        if (!invalidatedAssets.ContainsKey(mapPath) && predicate(this.MainContentManager, mapPath.Name, typeof(Map)))
+                            invalidatedAssets[mapPath] = typeof(Map);
                     }
                 }
             });
 
             // reload core game assets
-            if (removedAssets.Any())
+            if (invalidatedAssets.Any())
             {
                 // propagate changes to the game
                 this.CoreAssets.Propagate(
-                    assets: removedAssets.ToDictionary(p => p.Key, p => p.Value),
+                    contentManagers: this.ContentManagers,
+                    assets: invalidatedAssets.ToDictionary(p => p.Key, p => p.Value),
                     ignoreWorld: Context.IsWorldFullyUnloaded,
                     out IDictionary<IAssetName, bool> propagated,
                     out bool updatedNpcWarps
@@ -379,7 +390,7 @@ namespace StardewModdingAPI.Framework
                 // log summary
                 StringBuilder report = new();
                 {
-                    IAssetName[] invalidatedKeys = removedAssets.Keys.ToArray();
+                    IAssetName[] invalidatedKeys = invalidatedAssets.Keys.ToArray();
                     IAssetName[] propagatedKeys = propagated.Where(p => p.Value).Select(p => p.Key).ToArray();
 
                     string FormatKeyList(IEnumerable<IAssetName> keys) => string.Join(", ", keys.Select(p => p.Name).OrderBy(p => p, StringComparer.OrdinalIgnoreCase));
@@ -397,7 +408,7 @@ namespace StardewModdingAPI.Framework
             else
                 this.Monitor.Log("Invalidated 0 cache entries.");
 
-            return removedAssets.Keys;
+            return invalidatedAssets.Keys;
         }
 
         /// <summary>Get all loaded instances of an asset name.</summary>
