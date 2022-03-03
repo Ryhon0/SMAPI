@@ -168,6 +168,15 @@
         },
 
         /*********
+        ** Broke in SDV 1.6
+        *********/
+        "Skip Intro": {
+            "ID": "Pathoschild.SkipIntro",
+            "~1.9.9-alpha.20220227 | Status": "AssumeBroken",
+            "~1.9.9-alpha.20220227 | StatusReasonDetails": "causes crash during game launch"
+        },
+
+        /*********
         ** Broke in SDV 1.5.5
         *********/
         "Animated Portrait Framework": {
@@ -189,11 +198,6 @@
             "ID": "Becks723.JunimoStudio",
             "~2.0.1 | Status": "AssumeBroken",
             "~2.0.1 | StatusReasonDetails": "requires 'Microsoft.Xna.Framework.Audio.AudioCategory' which doesn't exist in MonoGame"
-        },
-        "Skip Intro": {
-            "ID": "Pathoschild.SkipIntro",
-            "~1.9.1 | Status": "AssumeBroken",
-            "~1.9.1 | StatusReasonDetails": "causes freeze during game launch"
         },
         "Stardew Hack": {
             "ID": "bcmpinc.StardewHack",
