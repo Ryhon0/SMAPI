@@ -132,7 +132,7 @@ foreach ($folder in $folders) {
     cp -Recurse "$smapiBin/i18n" "$bundlePath/smapi-internal"
 
     # bundle smapi-internal
-    foreach ($name in @("0Harmony.dll", "0Harmony.xml", "Mono.Cecil.dll", "Mono.Cecil.Mdb.dll", "Mono.Cecil.Pdb.dll", "MonoMod.Common.dll", "Newtonsoft.Json.dll", "TMXTile.dll", "SMAPI.Toolkit.dll", "SMAPI.Toolkit.pdb", "SMAPI.Toolkit.xml", "SMAPI.Toolkit.CoreInterfaces.dll", "SMAPI.Toolkit.CoreInterfaces.pdb", "SMAPI.Toolkit.CoreInterfaces.xml")) {
+    foreach ($name in @("0Harmony.dll", "0Harmony.xml", "Mono.Cecil.dll", "Mono.Cecil.Mdb.dll", "Mono.Cecil.Pdb.dll", "MonoMod.Common.dll", "Newtonsoft.Json.dll", "Pintail.dll", "TMXTile.dll", "SMAPI.Toolkit.dll", "SMAPI.Toolkit.pdb", "SMAPI.Toolkit.xml", "SMAPI.Toolkit.CoreInterfaces.dll", "SMAPI.Toolkit.CoreInterfaces.pdb", "SMAPI.Toolkit.CoreInterfaces.xml")) {
         cp "$smapiBin/$name" "$bundlePath/smapi-internal"
     }
 
