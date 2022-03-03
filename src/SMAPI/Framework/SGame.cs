@@ -438,7 +438,6 @@ namespace StardewModdingAPI.Framework
                 Game1.PopUIMode();
                 return;
             }
-
             if (Game1.gameMode == 0)
             {
                 Game1.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
@@ -538,7 +537,7 @@ namespace StardewModdingAPI.Framework
                     float layer = 0f;
                     if (Game1.currentLocation.buildingLayers.Count > 1)
                     {
-                        layer = j / Game1.currentLocation.buildingLayers.Count - 1;
+                        layer = (float)j / (float)(Game1.currentLocation.buildingLayers.Count - 1);
                     }
                     Game1.currentLocation.buildingLayers[j].Key.Draw(Game1.mapDisplayDevice, Game1.viewport, Location.Origin, wrapAround: false, 4, layer_sub_sort * layer);
                 }
@@ -612,7 +611,7 @@ namespace StardewModdingAPI.Framework
                     float layer2 = 0f;
                     if (Game1.currentLocation.frontLayers.Count > 1)
                     {
-                        layer2 = l / Game1.currentLocation.frontLayers.Count - 1;
+                        layer2 = (float)l / (float)(Game1.currentLocation.frontLayers.Count - 1);
                     }
                     Game1.currentLocation.frontLayers[l].Key.Draw(Game1.mapDisplayDevice, Game1.viewport, Location.Origin, wrapAround: false, 4, 64f + layer_sub_sort * layer2);
                 }
@@ -707,7 +706,7 @@ namespace StardewModdingAPI.Framework
                         render_zoom /= Game1.options.zoomLevel;
                     }
                     Game1.spriteBatch.Draw(Game1.lightmap, Vector2.Zero, Game1.lightmap.Bounds, Color.White, 0f, Vector2.Zero, render_zoom, SpriteEffects.None, 1f);
-                    if (Game1.IsRainingHere() && (bool)Game1.currentLocation.isOutdoors && !(Game1.currentLocation is Desert))
+                    if (Game1.IsRainingHere() && (bool)Game1.currentLocation.isOutdoors)
                     {
                         Game1.spriteBatch.Draw(Game1.staminaRect, vp.Bounds, Color.OrangeRed * 0.45f);
                     }
@@ -790,7 +789,7 @@ namespace StardewModdingAPI.Framework
             {
                 Game1.currentLocation.currentEvent.drawAfterMap(Game1.spriteBatch);
             }
-            if (!Game1.IsFakedBlackScreen() && Game1.IsRainingHere() && Game1.currentLocation != null && (bool)Game1.currentLocation.isOutdoors && !(Game1.currentLocation is Desert))
+            if (!Game1.IsFakedBlackScreen() && Game1.IsRainingHere() && Game1.currentLocation != null && (bool)Game1.currentLocation.isOutdoors)
             {
                 Game1.spriteBatch.Draw(Game1.staminaRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Blue * 0.2f);
             }
